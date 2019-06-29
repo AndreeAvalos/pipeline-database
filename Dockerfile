@@ -9,7 +9,7 @@ ENV MYSQL_DATABASE bd_p1
 # All scripts in docker-entrypoint-initdb.d/ are automatically
 # executed during container startup
 COPY ./sql-scripts/ /docker-entrypoint-initdb.d/
-COPY ./iniciar_DB.sh /app
-
-RUN sh ./iniciar_DB.sh
+COPY ./iniciar_DB.sh /database
+RUN cd /database
+RUN sh iniciar_DB.sh
 
