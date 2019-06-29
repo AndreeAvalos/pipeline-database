@@ -23,7 +23,7 @@ spec:
       containers:
       - image: mysql:latest
         imagePullPolicy: Always
-        name: database
+        name: mysql
         env:
           # Use secret in real usage
         - name: MYSQL_ROOT_PASSWORD
@@ -59,9 +59,9 @@ metadata:
 spec:
   externalTrafficPolicy: Cluster
   ports:
-  - port: 80
+  - port: 3306
     protocol: TCP
-    targetPort: 80
+    targetPort: 3306
   selector:
     workload.user.cattle.io/workloadselector: deployment-entrega-final-database
   type: LoadBalancer 
