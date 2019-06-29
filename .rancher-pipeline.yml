@@ -4,9 +4,8 @@ stages:
   - publishImageConfig:
       dockerfilePath: ./Dockerfile
       buildContext: .
-      tag: czdev/miws
+      tag: andreeavalos/pipeline-database
       pushRemote: true
-      registry: index.docker.io
 - name: Crear en k8s
   steps:
   - applyYamlConfig:
