@@ -1,54 +1,33 @@
-apiVersion: apps/v1beta2
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: database
-  namespace: entrega-final
+  name: mysql
 spec:
-  progressDeadlineSeconds: 600
-  replicas: 1
-  revisionHistoryLimit: 10
-  selector:
-    matchLabels:
-      workload.user.cattle.io/workloadselector: deployment-entrega-final-database
   strategy:
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 0
+      maxUnavailable: 1
     type: RollingUpdate
+  replicas: 1
   template:
     metadata:
       labels:
-        workload.user.cattle.io/workloadselector: deployment-entrega-final-database
+        app: mysql
     spec:
+      schedulerName: stork
       containers:
-      - image: mysql:latest
-        imagePullPolicy: Always
-        name: mysql
-      dnsPolicy: ClusterFirst
-      imagePullSecrets:
-      - name: dockerhub
-      restartPolicy: Always
-      schedulerName: default-scheduler
-      securityContext: {}
-      terminationGracePeriodSeconds: 30
----      
-apiVersion: v1
-kind: Service
-metadata:
-  annotations:
-    field.cattle.io/targetWorkloadIds: '["deployment:entrega-final:database"]'
-    workload.cattle.io/targetWorkloadIdNoop: "true"
-    workload.cattle.io/workloadPortBased: "true"
-  labels:
-    cattle.io/creator: norman
-  name: database-loadbalancer
-  namespace: entrega-final
-spec:
-  externalTrafficPolicy: Cluster
-  ports:
-  - port: 80
-    protocol: TCP
-    targetPort: 80
-  selector:
-    workload.user.cattle.io/workloadselector: deployment-entrega-final-database
-  type: LoadBalancer 
+      - name: mysql
+        image: mysql:latest
+        imagePullPolicy: "Always"
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: 1234        
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-data
+      volumes:
+      - name: mysql-data
+        persistentVolumeClaim:
+          claimName: px-mysql-pvc
