@@ -21,9 +21,9 @@ spec:
         workload.user.cattle.io/workloadselector: deployment-entrega-final-database
     spec:
       containers:
-      - image: andreeavalos/pipeline-database
+      - image: mysql:latest
         imagePullPolicy: Always
-        name: database
+        name: mysql
       dnsPolicy: ClusterFirst
       imagePullSecrets:
       - name: dockerhub
