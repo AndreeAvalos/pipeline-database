@@ -21,7 +21,7 @@ spec:
         workload.user.cattle.io/workloadselector: deployment-entrega-final-database
     spec:
       containers:
-      - image: czdev/miws
+      - image: andreeavalos/pipeline-database
         imagePullPolicy: Always
         name: database
       dnsPolicy: ClusterFirst
