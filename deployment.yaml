@@ -23,7 +23,7 @@ spec:
       containers:
       - image: mysql:latest
         imagePullPolicy: Always
-        name: mysql
+        name: database
         env:
           # Use secret in real usage
         - name: MYSQL_ROOT_PASSWORD
