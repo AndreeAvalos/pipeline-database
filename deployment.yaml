@@ -1,34 +1,29 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: mysql
-  namespace: entrega-final
-spec:
-  ports:
-  - port: 3306
-  selector:
-    app: mysql
-  clusterIP: None
----
-apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  name: mysql
+  name: database
   namespace: entrega-final
 spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: mysql
+      workload.user.cattle.io/workloadselector: deployment-entrega-final-database
   strategy:
-    type: Recreate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
   template:
     metadata:
       labels:
-        app: mysql
+        workload.user.cattle.io/workloadselector: deployment-entrega-final-database
     spec:
       containers:
       - image: mysql:latest
-        name: mysql
+        imagePullPolicy: Always
+        name: database
         env:
           # Use secret in real usage
         - name: MYSQL_ROOT_PASSWORD
@@ -43,3 +38,32 @@ spec:
       - name: mysql-persistent-storage
         persistentVolumeClaim:
           claimName: mysql-pv-claim
+
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+      - name: dockerhub
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+---      
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    field.cattle.io/targetWorkloadIds: '["deployment:entrega-final:database"]'
+    workload.cattle.io/targetWorkloadIdNoop: "true"
+    workload.cattle.io/workloadPortBased: "true"
+  labels:
+    cattle.io/creator: norman
+  name: mysql-loadbalancer
+  namespace: entrega-final
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    workload.user.cattle.io/workloadselector: deployment-entrega-final-database
+  type: LoadBalancer 
