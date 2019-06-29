@@ -1,33 +1,45 @@
-apiVersion: extensions/v1beta1
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: entrega-final
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: mysql
+  clusterIP: None
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
 metadata:
   name: mysql
+  namespace: entrega-final
 spec:
+  selector:
+    matchLabels:
+      app: mysql
   strategy:
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
-    type: RollingUpdate
-  replicas: 1
+    type: Recreate
   template:
     metadata:
       labels:
         app: mysql
     spec:
-      schedulerName: stork
       containers:
-      - name: mysql
-        image: mysql:latest
-        imagePullPolicy: "Always"
+      - image: mysql:latest
+        name: mysql
         env:
+          # Use secret in real usage
         - name: MYSQL_ROOT_PASSWORD
-          value: 1234        
+          value: 1234
         ports:
         - containerPort: 3306
+          name: mysql
         volumeMounts:
-        - mountPath: /var/lib/mysql
-          name: mysql-data
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
       volumes:
-      - name: mysql-data
+      - name: mysql-persistent-storage
         persistentVolumeClaim:
-          claimName: px-mysql-pvc
+          claimName: mysql-pv-claim
